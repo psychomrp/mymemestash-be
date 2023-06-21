@@ -3,15 +3,15 @@ const UserModel = require('../models/User');
 const { body, validationResult } = require('express-validator');
 
 // Login
-const login = (req, res) => {
+const login = (req, res, next) => {
     // Validations
     const validations = [
-        body('email').notEmpty.isEmail().withMessage('Invalid Email'),
+        body('email').isEmail().withMessage('Invalid Email'),
         body('pass').notEmpty().withMessage('Password is required')
     ];
 
     // Apply validations
-    validations.forEach(validation => validation(req, res));
+    validations.forEach(validation => validation(req, res, next));
 
     // Check validation result
     const errors = validationResult(req);
