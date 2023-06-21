@@ -6,12 +6,12 @@ const auth = require('./controllers/Auth')
 router.get('/', (req, res) => {
     res.json({
         status: 'success',
-        message: 'myMemeStash',
+        message: 'mymemestash',
         version: 1
     })
 });
 
 // Auth
-router.post('/login', auth.login);
+router.post('/auth/login', auth.login);
 
 module.exports = router;
