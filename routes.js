@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('./controllers/Auth')
+const { validateLogin, checkValidationResult } = require('./validator');
 
 // Index
 router.get('/', (req, res) => {
@@ -12,6 +13,6 @@ router.get('/', (req, res) => {
 });
 
 // Auth
-router.post('/auth/login', auth.login);
+router.post('/auth/login', validateLogin, checkValidationResult, auth.login);
 
 module.exports = router;
