@@ -89,6 +89,15 @@ class User {
     }
   }
 
+  static async resetPassword(data) {
+    try {
+        const [token] = await knex('users').insert(data, 'token');
+        return token;
+    } catch (error) {
+        throw error;
+    }
+  }
+
 }
 
 module.exports = User;

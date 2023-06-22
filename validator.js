@@ -23,6 +23,13 @@ const checkEmailExists = async (value) => {
     }
 }
 
+const checkEmailDoesNotExists = async (value) => {
+    const user = await knex('users').where('email', value).first();
+    if (!user) {
+        throw new Error('Email does not exist');
+    }
+}
+
 exports.validateLogin = [
     body('username').notEmpty().withMessage('Username is required'),
     body('username')
@@ -54,4 +61,10 @@ exports.validateRegister = [
         return true;
     })
     .withMessage('Password confirmation does not match')
+];
+
+exports.validateForgotPassword = [
+    body('email').notEmpty().withMessage('Email is required'),
+    body('email').isEmail().withMessage('Email is invalid'),
+    body('email').custom(checkEmailDoesNotExists).withMessage('Email does not exist')
 ];
