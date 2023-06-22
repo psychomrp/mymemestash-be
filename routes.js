@@ -5,6 +5,7 @@ const {
     validateLogin, 
     validateRegister, 
     validateForgotPassword,
+    validateForgotPasswordToken,
     checkValidationResult,
 } = require('./validator');
 const { verifyToken } = require('./middleware');
@@ -18,10 +19,13 @@ router.get('/', (req, res) => {
     });
 });
 
-// Auth
+// Auth [Guest]
 router.post('/auth/login', validateLogin, checkValidationResult, auth.login);
 router.post('/auth/register', validateRegister, checkValidationResult, auth.register);
-router.get('/auth/user', verifyToken, auth.user);
 router.post('/auth/password-reset', validateForgotPassword, checkValidationResult, auth.forgotPassword);
+router.get('/auth/password-reset/:token', validateForgotPasswordToken, checkValidationResult, auth.forgotPasswordVerifyToken)
+// Auth [Protected]
+router.get('/auth/user', verifyToken, auth.user);
+router.post('/auth/user/update/password', verifyToken, auth.userUpdatePassword);
 
 module.exports = router;

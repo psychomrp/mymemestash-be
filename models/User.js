@@ -75,26 +75,37 @@ class User {
 
   static async verifyPassword(hash, pass) {
     try {
-        bcrypt.compare(pass, hash, (err, isValid) => {
-            if (err) {
-                throw err;
-            } else if (isValid) {
-                return true;
-            } else {
-                return false;
-            }
-        });
+      const isValid = await bcrypt.compare(pass, hash);
+      return isValid;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+
+  static async requestResetPassword(data) {
+    try {
+        const [token] = await knex('password_resets').insert(data, 'token');
+        return token;
     } catch (error) {
         throw error;
     }
   }
 
-  static async resetPassword(data) {
+  static async getUserByResetToken(token) {
     try {
-        const [token] = await knex('users').insert(data, 'token');
-        return token;
+      const user = await knex('password_resets').where('token', token).first();
+      return user;
     } catch (error) {
-        throw error;
+      throw error;
+    }
+  }
+
+  static async deleteResetToken(token) {
+    try {
+      await knex('password_resets').where('token', token).del();
+    } catch (error) {
+      throw error;
     }
   }
 

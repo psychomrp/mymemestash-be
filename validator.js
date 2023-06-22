@@ -1,4 +1,4 @@
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const knex = require('knex')(require('./knexfile').development);
 
 exports.checkValidationResult = (req, res, next) => {
@@ -29,6 +29,27 @@ const checkEmailDoesNotExists = async (value) => {
         throw new Error('Email does not exist');
     }
 }
+
+const checkIfResetTokenExists = async (value) => {
+    const pwdReset = await knex('password_resets').where('token', value).first();
+    if(!pwdReset) {
+        throw new Error('Token does not exist');
+    }
+}
+
+const checkIfResetTokenHasExpired = async (value) => {
+    const pwdReset = await knex('password_resets').where('token', value).first();
+    const expiresAt = new Date(pwdReset.expires_at);
+  
+    if (new Date() > expiresAt) {
+      throw new Error('Token has expired');
+    }
+}
+
+const checkIfOldPasswordIsCorrect = async (value) => {
+    
+}
+  
 
 exports.validateLogin = [
     body('username').notEmpty().withMessage('Username is required'),
@@ -68,3 +89,14 @@ exports.validateForgotPassword = [
     body('email').isEmail().withMessage('Email is invalid'),
     body('email').custom(checkEmailDoesNotExists).withMessage('Email does not exist')
 ];
+
+exports.validateForgotPasswordToken = [
+    param('token').notEmpty().withMessage('Token is required'),
+    param('token').custom(checkIfResetTokenExists).withMessage('Token does not exist'),
+    param('token').custom(checkIfResetTokenHasExpired).withMessage('Token has expired')
+];
+
+exports.validateUpdatePassword = [
+    body('oldpass').notEmpty().withMessage('Old password is required'),
+    body('oldpass').custom(checkIfOldPasswordIsCorrect).withMessage('Old password is incorrect')
+]
