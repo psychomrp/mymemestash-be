@@ -50,22 +50,24 @@ const register = (req, res) => {
 
             const token = jwt.sign({ userId: user.id }, 'mymemestash', { expiresIn: '1h' });
 
-            delete user.password;
-            
-            mailer.sendTemplatedEmail(email, 'Welcome to MyMemeStash', {
-                title: 'Welcome to MyMemeStash',
-                content: 
-                `
-                <p>Hey there @${username}!</p>
-                <p>Get ready to dive into the fun-filled world of memes with MyMemeStash. We're thrilled to have you on board!</p>
-                <p>At MyMemeStash, we believe that laughter is the best medicine, and we've got an endless supply of hilarious, entertaining, and addictive meme content just for you.</p>
-                <p>Get ready to explore a treasure trove of memes, connect with fellow meme enthusiasts, and share the laughter with the world.</p>
-                <p>Whether you're a meme connoisseur, a casual meme lover, or a meme-curious adventurer, MyMemeStash is here to make your days brighter, your funny bone tickled, and your meme stash overflowing!</p>
-                <p>Join us now and embark on an epic journey of memes that will leave you smiling, laughing, and coming back for more.</p>
-                <p>Stay tuned for daily meme updates, trending memes, and meme challenges that will keep you hooked.</p>
-                <p>We can't wait to see you in the world of MyMemeStash!</p>
-                `
-            });
+            try {
+                mailer.sendTemplatedEmail(email, 'Welcome to MyMemeStash', {
+                    title: 'Welcome to MyMemeStash',
+                    content: 
+                    `
+                    <p>Hey there @${username}!</p>
+                    <p>Get ready to dive into the fun-filled world of memes with MyMemeStash. We're thrilled to have you on board!</p>
+                    <p>At MyMemeStash, we believe that laughter is the best medicine, and we've got an endless supply of hilarious, entertaining, and addictive meme content just for you.</p>
+                    <p>Get ready to explore a treasure trove of memes, connect with fellow meme enthusiasts, and share the laughter with the world.</p>
+                    <p>Whether you're a meme connoisseur, a casual meme lover, or a meme-curious adventurer, MyMemeStash is here to make your days brighter, your funny bone tickled, and your meme stash overflowing!</p>
+                    <p>Join us now and embark on an epic journey of memes that will leave you smiling, laughing, and coming back for more.</p>
+                    <p>Stay tuned for daily meme updates, trending memes, and meme challenges that will keep you hooked.</p>
+                    <p>We can't wait to see you in the world of MyMemeStash!</p>
+                    `
+                });
+            } catch(error) {
+                console.log(error)
+            }
 
             res.status(200).json({ token: token, user: user})
         })

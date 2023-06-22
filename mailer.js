@@ -10,7 +10,7 @@ const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf8');
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: true,
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -23,6 +23,7 @@ const sendTemplatedEmail = (recipientEmail, subject, templateData) => {
     const { title, content } = templateData;
   
     const mailOptions = {
+      from: process.env.SMTP_FROM,
       to: recipientEmail,
       subject: subject,
       html: emailTemplate.replace('{{title}}', title).replace('{{content}}', content),
