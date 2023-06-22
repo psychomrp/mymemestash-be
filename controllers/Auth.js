@@ -3,7 +3,7 @@ const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const mailer = require('../mailer');
-const cryptoRandomString = require('crypto-random-string');
+const cryptoRandomString = import('crypto-random-string');
 
 // Login
 const login = (req, res, next) => {
@@ -92,7 +92,7 @@ const forgotPassword = async (req, res) => {
         return res.status(401).json({ error: 'Invalid email address' });
     }
 
-    const randomString = cryptoRandomString({ length: 10 });
+    const randomString = await cryptoRandomString({ length: 10 });
     const expirationTime = new Date();
     expirationTime.setHours(expirationTime.getHours() + 1);
 
