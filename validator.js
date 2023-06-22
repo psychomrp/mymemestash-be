@@ -16,6 +16,13 @@ const checkUsernameExists = async (value) => {
     }
 };
 
+const checkEmailExists = async (value) => {
+    const user = await knex('users').where('email', value).first();
+    if (user) {
+        throw new Error('Email already exists');
+    }
+}
+
 exports.validateLogin = [
     body('username').notEmpty().withMessage('Username is required'),
     body('username')
@@ -32,8 +39,19 @@ exports.validateRegister = [
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('Invalid username. Usernames must not contain special symbols except underscore (_) and must not contain numbers or special characters.'),
     body('username').notEmpty().custom(checkUsernameExists).withMessage('Username already exists'),
+    body('email').notEmpty().custom(checkEmailExists).withMessage('Email already exists'),
     body('email').notEmpty().withMessage('Email is required'),
     body('email').isEmail().withMessage('Invalid email'),
     body('pass').notEmpty().withMessage('Password is required'),
     body('pass').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('cpass').notEmpty().withMessage('Password Confirmation is required'),
+    body('cpass').isLength({ min: 6 }).withMessage('Password Confirmation must be at least 6 characters long'),
+    body('cpass')
+    .custom((value, { req }) => {
+        if (value !== req.body.pass) {
+        throw new Error('Password confirmation does not match');
+        }
+        return true;
+    })
+    .withMessage('Password confirmation does not match')
 ];
