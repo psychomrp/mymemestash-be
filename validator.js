@@ -1,5 +1,6 @@
 const { body, param, validationResult } = require('express-validator');
 const knex = require('knex')(require('./knexfile').development);
+const User = require('./models/User');
 
 exports.checkValidationResult = (req, res, next) => {
   const errors = validationResult(req);
@@ -45,11 +46,6 @@ const checkIfResetTokenHasExpired = async (value) => {
       throw new Error('Token has expired');
     }
 }
-
-const checkIfOldPasswordIsCorrect = async (value) => {
-    
-}
-  
 
 exports.validateLogin = [
     body('username').notEmpty().withMessage('Username is required'),
@@ -98,5 +94,14 @@ exports.validateForgotPasswordToken = [
 
 exports.validateUpdatePassword = [
     body('oldpass').notEmpty().withMessage('Old password is required'),
-    body('oldpass').custom(checkIfOldPasswordIsCorrect).withMessage('Old password is incorrect')
+    body('newpass').notEmpty().withMessage('New password is required'),
+    body('cnewpass').notEmpty().withMessage('New password confirmation is required'),
+    body('cnewpass')
+    .custom((value, { req }) => {
+        if (value !== req.body.cnewpass) {
+            return false;
+        }
+        return true;
+    })
+    .withMessage('New password confirmation does not match')
 ]

@@ -6,6 +6,7 @@ const {
     validateRegister, 
     validateForgotPassword,
     validateForgotPasswordToken,
+    validateUpdatePassword,
     checkValidationResult,
 } = require('./validator');
 const { verifyToken } = require('./middleware');
@@ -26,6 +27,6 @@ router.post('/auth/password-reset', validateForgotPassword, checkValidationResul
 router.get('/auth/password-reset/:token', validateForgotPasswordToken, checkValidationResult, auth.forgotPasswordVerifyToken)
 // Auth [Protected]
 router.get('/auth/user', verifyToken, auth.user);
-// router.post('/auth/user/update/password', verifyToken, auth.userUpdatePassword);
+router.post('/auth/user/update/password', verifyToken, validateUpdatePassword, checkValidationResult, auth.userUpdatePassword);
 
 module.exports = router;

@@ -46,26 +46,13 @@ const register = (req, res) => {
     User.createUser({username, email, pass})
         .then(user => {
             if (!user) {
-                return res.status(401).json({ error: 'Registration failed, kindly try again'});
+                return res.status(400).json({ error: 'Registration failed, kindly try again'});
             }
 
             const token = jwt.sign({ userId: user.id }, 'mymemestash', { expiresIn: '1h' });
 
             try {
-                mailer.sendTemplatedEmail(email, 'Welcome to MyMemeStash', {
-                    title: 'Welcome to MyMemeStash',
-                    content: 
-                    `
-                    <p>Hey there @${username}!</p>
-                    <p>Get ready to dive into the fun-filled world of memes with MyMemeStash. We're thrilled to have you on board!</p>
-                    <p>At MyMemeStash, we believe that laughter is the best medicine, and we've got an endless supply of hilarious, entertaining, and addictive meme content just for you.</p>
-                    <p>Get ready to explore a treasure trove of memes, connect with fellow meme enthusiasts, and share the laughter with the world.</p>
-                    <p>Whether you're a meme connoisseur, a casual meme lover, or a meme-curious adventurer, MyMemeStash is here to make your days brighter, your funny bone tickled, and your meme stash overflowing!</p>
-                    <p>Join us now and embark on an epic journey of memes that will leave you smiling, laughing, and coming back for more.</p>
-                    <p>Stay tuned for daily meme updates, trending memes, and meme challenges that will keep you hooked.</p>
-                    <p>We can't wait to see you in the world of MyMemeStash!</p>
-                    `
-                });
+                mailer.sendTemplatedEmail(email, 'Welcome to MyMemeStash', mailer.welcomeMail({username}));
             } catch(error) {
                 console.log(error)
             }
@@ -92,7 +79,7 @@ const forgotPassword = async (req, res) => {
     const user = await User.getUserByEmail(email);
 
     if (!user) {
-        return res.status(401).json({ error: 'Invalid email address' });
+        return res.status(400).json({ error: 'Invalid email address' });
     }
 
     const randomToken = randomstring.generate(20);
@@ -108,23 +95,7 @@ const forgotPassword = async (req, res) => {
         expires_at: expirationTime
     });
 
-    mailer.sendTemplatedEmail(email, 'Password Reset Request', {
-        title: 'Forgot Your Password?',
-        content: 
-        `
-        <p>Hey there!</p>
-        <p>We received a request to reset your password for your MyMemeStash account.</p>
-        <p>If you didn't make this request, you can safely ignore this email.</p>
-        <p>To reset your password, click the button below:</p>
-        <p><a class="button" href="${url}">Reset Password</a></p>
-        <p>You can also copy the link below if the button does not work:</p>
-        <div class="password-section">
-            <p><strong><a href="${url}">${url}</a></strong></p>
-        </div>
-        <p>This link will expire in 24 hours for security purposes.</p>
-        <p>If you continue to experience any issues, please reach out to our support team for assistance.</p>  
-        `
-    });
+    mailer.sendTemplatedEmail(email, 'Password Reset Request', mailer.forgotPasswordMail({url}));
 
     res.status(200).json({ message: 'Forgot Password Link Sent', email: email });
 }
@@ -144,23 +115,45 @@ const forgotPasswordVerifyToken = async (req, res) => {
         password: hashedPassword
     });
 
-    mailer.sendTemplatedEmail(email, 'Password Reset Successful', {
-        title: 'Your New Password',
-        content: 
-        `
-        <p>Hey there!</p>
-        <p>We have generated a new password for your MyMemeStash account as per your request.</p>
-        <div class="password-section">
-            <p><strong>Your New Password: </strong>${newPassword}</p>
-        </div>
-        <p>Please log in using your new password and consider changing it to a memorable one after logging in.</p>
-        <p>If you continue to experience any issues, please reach out to our support team for assistance.</p>  
-        `
-    });
+    mailer.sendTemplatedEmail(email, 'Password Reset Successful', mailer.passwordSentMail({newPassword}));
 
     await User.deleteResetToken(token)
 
     res.status(200).json({ message: 'New Password Generated and Sent!', email: email })
 }
 
-module.exports = { login, register, user, forgotPassword, forgotPasswordVerifyToken }
+const userUpdatePassword = async (req, res) => {
+    const userData = await User.getUserById(req.userId);
+
+    if (!userData) {
+        throw new Error('User does not exist');
+    }
+
+    const userPass = userData.password;
+
+    const checkPass = await User.verifyPassword(userPass, req.body.oldpass);
+
+    if(!checkPass) {
+        return res.status(400).json({ error: 'Old password is incorrect' });
+    }
+
+    const newPassword = req.body.newpass;
+    const hashedPassword = await User.hashPassword(newPassword);
+
+    await User.updateUser(userData.id, {
+        password: hashedPassword
+    });
+
+    mailer.sendTemplatedEmail(userData.email, 'Account Password Updated', mailer.paswordChangedMail({}));
+
+    res.status(200).json({ message: 'New Password Updated' });
+}
+
+module.exports = { 
+    login, 
+    register, 
+    user, 
+    forgotPassword, 
+    forgotPasswordVerifyToken, 
+    userUpdatePassword 
+};
