@@ -12,6 +12,7 @@ const {
     validateEditUserStash,
     validateDeleteUserStash,
     validateUploadUserStash,
+    validateFetchSingleUserStash,
     checkValidationResult,
 } = require('./validator');
 const { verifyToken } = require('./middleware');
@@ -41,6 +42,7 @@ router.post('/auth/user/update/password', verifyToken, validateUpdatePassword, c
  * /stash Routes [Protected]
  */
 router.get('/stash/user', verifyToken, stash.fetchUserStash);
+router.get('/stash/user/:stash_code', verifyToken, validateFetchSingleUserStash, checkValidationResult, stash.fetchSingleUserStash);
 router.post('/stash/user', verifyToken, validateCreateUserStash, checkValidationResult, stash.createUserStash);
 router.patch('/stash/user', verifyToken, validateEditUserStash, checkValidationResult, stash.editUserStash);
 router.delete('/stash/user', verifyToken, validateDeleteUserStash, checkValidationResult, stash.deleteUserStash);

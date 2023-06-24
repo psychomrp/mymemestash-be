@@ -134,10 +134,30 @@ const uploadUserStash = async (req, res) => {
     res.json({message: 'Stash files uploaded', items: items });
 }
 
+const fetchSingleUserStash = async (req, res) => {
+    const userId = req.userId;
+    const stashCode = req.params.stash_code;
+
+    const checkThatStashBelongsToUser = await Stashes.checkThatStashBelongsToUser(userId, stashCode);
+
+    if(!checkThatStashBelongsToUser) {
+        return res.status(400).json({error: 'Permission denied'});
+    }
+
+    try {
+        const singleStash = await Stashes.getStashByCode(stashCode);
+        return res.status(200).json(singleStash);
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({error: 'Failed to fetch stash, try again'});
+    }
+}
+
 module.exports = {
     fetchUserStash,
     createUserStash,
     editUserStash,
     deleteUserStash,
-    uploadUserStash
+    uploadUserStash,
+    fetchSingleUserStash
 }

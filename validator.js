@@ -155,3 +155,8 @@ exports.validateUploadUserStash = [
     param('stash_code').notEmpty().withMessage('Stash Code is required'),
     param('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash code is invalid')
 ]
+
+exports.validateFetchSingleUserStash = [
+    param('stash_code').notEmpty().withMessage('Stash Code is required'),
+    param('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash code is invalid')
+]
