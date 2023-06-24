@@ -11,6 +11,7 @@ const {
     validateCreateUserStash,
     validateEditUserStash,
     validateDeleteUserStash,
+    validateUploadUserStash,
     checkValidationResult,
 } = require('./validator');
 const { verifyToken } = require('./middleware');
@@ -43,4 +44,6 @@ router.get('/stash/user', verifyToken, stash.fetchUserStash);
 router.post('/stash/user', verifyToken, validateCreateUserStash, checkValidationResult, stash.createUserStash);
 router.patch('/stash/user', verifyToken, validateEditUserStash, checkValidationResult, stash.editUserStash);
 router.delete('/stash/user', verifyToken, validateDeleteUserStash, checkValidationResult, stash.deleteUserStash);
+router.post('/stash/user/upload/:stash_code', verifyToken, validateUploadUserStash, checkValidationResult, stash.uploadUserStash);
+
 module.exports = router;

@@ -150,3 +150,8 @@ exports.validateDeleteUserStash = [
     body('stash_code').notEmpty().withMessage('Stash Code is required'),
     body('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash Code is invalid')
 ]
+
+exports.validateUploadUserStash = [
+    param('stash_code').notEmpty().withMessage('Stash Code is required'),
+    param('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash code is invalid')
+]

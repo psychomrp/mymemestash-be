@@ -1,6 +1,7 @@
 // imports
 const Stashes = require('../models/Stashes');
 const randomstring = require('randomstring');
+const { upload } = require('../cloudinary');
 
 // functions
 const fetchUserStash = async (req, res) => {
@@ -78,9 +79,65 @@ const deleteUserStash = async (req, res) => {
     return res.status(200).json({message: 'User stash deleted'});
 }
 
+const uploadUserStash = async (req, res) => {
+    const userId = req.userId;
+    const stashCode = req.params.stash_code;
+
+    const checkThatStashBelongsToUser = await Stashes.checkThatStashBelongsToUser(userId, stashCode);
+
+    if(!checkThatStashBelongsToUser) {
+        return res.status(400).json({error: 'Permission denied'});
+    }
+
+    const files = req.files;
+
+    // Define the allowed file types (images, gifs, and short videos)
+    const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/quicktime', 'video/mp4'];
+
+    // Array to store the uploaded file metadata
+    const items = [];
+
+    // Loop through each uploaded file
+    for (const file of files) {
+        const public_id = randomstring.generate(10);
+        const fileSizeInBytes = file.size;
+        const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
+
+        // Check if the file type is allowed
+        if (allowedFileTypes.includes(file.mimetype)) {
+            try {
+                // Upload the file to Cloudinary
+                const result = await upload(file, public_id);
+                // Store the file metadata in the 'items' object
+                items.push({
+                    file_type: file.mimetype,
+                    file_size: fileSizeInMB,
+                    public_id: public_id,
+                    urls: {
+                        original: result.original,
+                        compressed: result.compressed
+                    },
+                    original_filename: result.original_filename,
+                });
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+    }
+
+    // Update Stash with items
+    await Stashes.updateStash(stashCode, {
+        items: JSON.stringify(items)
+    });
+
+    // Respond with the uploaded file metadata
+    res.json({message: 'Stash files uploaded', items: items });
+}
+
 module.exports = {
     fetchUserStash,
     createUserStash,
     editUserStash,
-    deleteUserStash
+    deleteUserStash,
+    uploadUserStash
 }
