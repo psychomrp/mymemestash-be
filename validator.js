@@ -105,3 +105,11 @@ exports.validateUpdatePassword = [
     })
     .withMessage('New password confirmation does not match')
 ]
+
+exports.validateCreateUserStash = [
+    body('title').notEmpty().withMessage('Title is required'),
+    body('tags').notEmpty().withMessage('Tags is required'),
+    body('tags').isArray().withMessage('Tags must an array'),
+    body('privacy').notEmpty().withMessage('Privacy is required'),
+    body('privacy').isIn(['public', 'private']).withMessage('Access type must be either "public" or "private"')
+]
