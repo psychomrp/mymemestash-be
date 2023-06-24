@@ -40,19 +40,32 @@ class Stashes {
     }
   }
 
-  static async updateStash(id, updatedData) {
+  static async updateStash(stash_code, updatedData) {
     try {
-      await knex('stashes').where('id', id).update(updatedData);
+      await knex('stashes').where('stash_code', stash_code).update(updatedData);
     } catch (error) {
       throw error;
     }
   }
 
-  static async deleteStash(id) {
+  static async deleteStash(stash_code) {
     try {
-      await knex('stashes').where('id', id).del();
+      await knex('stashes').where('stash_code', stash_code).del();
     } catch (error) {
       throw error;
+    }
+  }
+
+  static async checkThatStashBelongsToUser(userId, stashCode) {
+    try {
+        const stash = await knex('stashes').where('stash_code', stashCode).where('user_id', userId).first();
+        if(stash) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        throw error;
     }
   }
 }

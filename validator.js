@@ -47,6 +47,26 @@ const checkIfResetTokenHasExpired = async (value) => {
     }
 }
 
+const checkIfStashCodeIsValid = async (value) => {
+    const fetchStashByCode = await knex('stashes').where('stash_code', value).first();
+    if(!fetchStashByCode) {
+        throw new Error('Stash code is invalid');
+    }
+}
+
+// Custom validation function to check for whitespace in array elements
+const noWhitespace = (value) => {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        if (typeof value[i] === 'string' && /\s/.test(value[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+};
+
 exports.validateLogin = [
     body('username').notEmpty().withMessage('Username is required'),
     body('username')
@@ -110,6 +130,23 @@ exports.validateCreateUserStash = [
     body('title').notEmpty().withMessage('Title is required'),
     body('tags').notEmpty().withMessage('Tags is required'),
     body('tags').isArray().withMessage('Tags must an array'),
+    body('tags').custom(noWhitespace).withMessage('Tags must not contain whitespace'),
     body('privacy').notEmpty().withMessage('Privacy is required'),
-    body('privacy').isIn(['public', 'private']).withMessage('Access type must be either "public" or "private"')
+    body('privacy').isIn(['public', 'private']).withMessage('Access type must be either public or private')
+]
+
+exports.validateEditUserStash = [
+    body('stash_code').notEmpty().withMessage('Stash Code is required'),
+    body('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash Code is invalid'),
+    body('title').notEmpty().withMessage('Title is required'),
+    body('tags').notEmpty().withMessage('Tags is required'),
+    body('tags').isArray().withMessage('Tags must an array'),
+    body('tags').custom(noWhitespace).withMessage('Tags must not contain whitespace'),
+    body('privacy').notEmpty().withMessage('Privacy is required'),
+    body('privacy').isIn(['public', 'private']).withMessage('Access type must be either public or private')
+]
+
+exports.validateDeleteUserStash = [
+    body('stash_code').notEmpty().withMessage('Stash Code is required'),
+    body('stash_code').custom(checkIfStashCodeIsValid).withMessage('Stash Code is invalid')
 ]
